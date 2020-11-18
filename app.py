@@ -40,16 +40,6 @@ server = app.server
 # Load mapbox token
 mapboxAccessToken = str(os.environ['MAPBOX_ACCESS_TOKEN'])
 
-# # Mapbox token  NOTE: see also using the config var
-# in heroku (
-# # https://devcenter.heroku.com/articles/config-vars)
-# mapboxAccessToken = str(os.environ['MAPBOX_ACCESS_TOKEN'])
-# # may need to be "MAPBOX_TOKEN" (i.e., without the "ACCESS")
-# if not mapboxAccessToken:
-# mbt = open(PATH(".mapbox_token"), 'r')
-# mapboxAccessToken = mbt.read().replace('"', '')
-# mbt.close()
-
 # Load datasets: Converted in external script from goeJSON to csv with x,y columns
 df = pd.read_csv(DATA_PATH.joinpath(
     'az_nm_2000_2020_noGrassMask_points_cat_precip_cats.csv'), index_col='year')
@@ -110,8 +100,6 @@ app.layout = dbc.Container(
                 dbc.Col(
                     [
                         html.H1('ANPP - NDVI Anomalies', style={'testAlign':'center'}),
-                        # html.P('Interactive mapping of GrassCast ANPP and '
-                        #        'MODIS NDVI anomalies', style={'testAlign':'center'}),
                     ],
                     md=11,
                 ),
@@ -123,6 +111,16 @@ app.layout = dbc.Container(
                 )
             ],
             justify='end'
+        ),
+
+        dbc.Row(
+            [
+                dbc.Col(
+                    dcc.Graph(
+                        id='distribution-plots'
+                    ),
+                    md=12),
+            ],
         ),
 
         dbc.Row(
@@ -163,17 +161,6 @@ app.layout = dbc.Container(
                     ),
                     md=12),
             ],
-            # autosize=True,
-        ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    dcc.Graph(
-                        id='distribution-plots'
-                    ),
-                    md=12),
-            ],
-            # autosize=True,
         ),
     ],
     fluid=True,
@@ -193,7 +180,6 @@ def toggle_modal(n1, n2, is_open):
 # Distribution plots
 @app.callback(
     Output('distribution-plots', 'figure'),
-    # [Input('anom-class-dropdown', 'value'),
      [Input('year-slider', 'value')]
 )
 def dist_plots(year):
@@ -212,11 +198,10 @@ def dist_plots(year):
     return fig
 
 # Map graph
-# TODO: see https://community.plotly.com/t/preserving-ui-state-like-zoom-in-dcc-graph-with-uirevision/15793
+# see https://community.plotly.com/t/preserving-ui-state-like-zoom-in-dcc-graph-with-uirevision/15793
 #   about preventing auto resetting map with input (e.g., slider) change.
 @app.callback(
     Output('map-graph', 'figure'),
-    # [Input('anom-class-dropdown', 'value'),
      [Input('year-slider', 'value')]
 )
 def map_selection(year):
@@ -231,7 +216,6 @@ def map_selection(year):
                             'GrassCast ANPP Summer (August-September)',
                             'MODIS NDVI Spring (April-May)',
                             'MODIS NDVI Summer (August-September)'),
-            # column_titles=('Spring', 'Summer'),
             horizontal_spacing=0.05,
             vertical_spacing=0.05,
             specs=[[{'type': 'mapbox'}, {'type': 'mapbox'}],
@@ -245,14 +229,6 @@ def map_selection(year):
             text = list(map_data['gridID']),
             customdata = map_data['spring_delta_anpp'],
 
-            # lat=list(map_data[['gridID', 'spr_anpp_delta', 'lat', 'lon']]['lat']),
-            # lon=list(map_data[['gridID', 'spr_anpp_delta', 'lat', 'lon']]['lon']),
-            # text=list(
-            #     map_data[['gridID', 'spr_anpp_delta', 'lat', 'lon']]['gridID']),
-            # customdata=list(map_data[['gridID', 'spr_anpp_delta',
-            #                           'lat', 'lon']]['spr_anpp_delta']),
-            # subplot = 'mapbox',
-            # hover_data = ['gridID', 'year', 'spr_anpp_delta'],
             hovertemplate =
                 "Point ID: <b>%{text}</b><br><br>" +
                 "Anomaly: <b>%{customdata}</b><br>" +
@@ -264,7 +240,6 @@ def map_selection(year):
                 showscale=True,
                 color = map_data['spr_delta_anpp_nm'],
                 coloraxis = 'coloraxis',
-                # colorscale = 'RdBu',
                 cmid=0,
                 cmin = -30,
                 cmax = 30
@@ -276,8 +251,6 @@ def map_selection(year):
             lon = lon,
             text = list(map_data['gridID']),
             customdata = map_data['summer_delta_anpp'],
-            # subplot='mapbox',
-            # hover_data = ['gridID', 'year', 'sum_anpp_delta'],
             hovertemplate =
                 "Point ID: <b>%{text}</b><br><br>" +
                 "Anomaly: <b>%{customdata}</b><br>" +
@@ -289,7 +262,6 @@ def map_selection(year):
                 showscale=True,
                 color = map_data['summ_delta_anpp_nm'],
                 coloraxis='coloraxis',
-                # colorscale = 'RdBu',
                 cmid=0,
                 cmin = -30,
                 cmax = 30
@@ -301,7 +273,6 @@ def map_selection(year):
             lon = lon,
             text = map_data['gridID'],
             customdata = map_data['spring_delta_ndvi'],
-            # subplot='mapbox',
             hovertemplate =
                 "Point ID: <b>%{text}</b><br><br>" +
                 "Anomaly: <b>%{customdata}</b><br>" +
@@ -313,7 +284,6 @@ def map_selection(year):
                 showscale=True,
                     color = map_data['spr_delta_ndvi_nm'],
                     coloraxis = 'coloraxis',
-                    # colorscale = 'RdBu',
                     cmid=0,
                     cmin = -30,
                     cmax = 30
@@ -325,7 +295,6 @@ def map_selection(year):
             lon = lon,
             text = map_data['gridID'],
             customdata = map_data['summer_delta_ndvi'],
-            # subplot='mapbox',
             hovertemplate =
                 "Point ID: <b>%{text}</b><br><br>" +
                 "Anomaly: <b>%{customdata}</b><br>" +
@@ -337,7 +306,6 @@ def map_selection(year):
                 showscale=True,
                 color = map_data['summ_delta_ndvi_nm'],
                 coloraxis = 'coloraxis',
-                # colorscale = 'RdBu',
                 cmid=0,
                 cmin = -30,
                 cmax = 30
@@ -351,7 +319,6 @@ def map_selection(year):
         showlegend=False,
         hovermode="closest",
         uirevision='never',
-        # config=dict(modBarButtonsToAdd = ['scrollZoom'])
         )
 
     fig.update_mapboxes(
@@ -361,11 +328,8 @@ def map_selection(year):
             lon=-109.0064119,  # manually copied from the csv lon
             lat=  34.50971515  # manually copied from the csv lat
         ),
-        # pitch=30,
         zoom=5)
-    # configmodBarButtonsToAdd = ['scrollZoom'])
     return fig
-    # return gen_map(dff)
 
 
 if __name__ == '__main__':
